@@ -10,6 +10,8 @@ using ProductApi.ViewModels;
 
 namespace ProductApi.Controllers
 {
+    [EnableCors]
+    
     [Route("api/[controller]")]
     [ApiController]
     public class SellerController : ControllerBase
