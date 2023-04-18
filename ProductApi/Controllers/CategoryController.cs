@@ -9,6 +9,8 @@ using ProductApi.ViewModels;
 
 namespace ProductApi.Controllers
 {
+    [EnableCors]
+
     [Route("api/[controller]")]
     [ApiController]
     public class CategoryController : ControllerBase
