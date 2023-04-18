@@ -9,7 +9,6 @@ I have created web api to improve my asp.net core skill
 * Fluent Api (For creating table relations)
 * Migrations (For creating tables)
 * Added CORS Policy
+* Authorization and Authentication with jwt token
 
-## What I am doing now
-* Adding authorization with jwt token (Almost done)
 
