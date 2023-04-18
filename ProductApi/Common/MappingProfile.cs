@@ -18,6 +18,7 @@ namespace ProductApi.Common
             CreateMap<Seller, SellerViewModel>();
             CreateMap<SellerViewModel, Seller>();
             CreateMap<SellerRegisterViewModel, Seller>();
+            CreateMap<SellerLoginViewModel, Seller>();
 
             //For Categories
             CreateMap<Category, CategoryViewModel>();

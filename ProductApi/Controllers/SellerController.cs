@@ -17,13 +17,15 @@ namespace ProductApi.Controllers
         private readonly IRepository<Seller> _sellerRepository;
         private readonly IValidator<Seller> _validator;
         private readonly IValidator<SellerRegisterViewModel> _registerValidator;
+        private readonly IValidator<SellerLoginViewModel> _loginValidator;
         private readonly IMapper _mapper;
 
-        public SellerController(IRepository<Seller> sellerRepository, IValidator<Seller> validator, IValidator<SellerRegisterViewModel> registerValidator, IMapper mapper)
+        public SellerController(IRepository<Seller> sellerRepository, IValidator<Seller> validator, IValidator<SellerRegisterViewModel> registerValidator, IValidator<SellerLoginViewModel> loginValidator, IMapper mapper)
         {
             _sellerRepository = sellerRepository;
             _validator = validator;
             _registerValidator = registerValidator;
+            _loginValidator = loginValidator;
             _mapper = mapper;
         }
 
@@ -44,7 +46,6 @@ namespace ProductApi.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Policy = "AdminPolicy")]
         [Route("sellers/register")]
         public IActionResult AddSeller([FromBody] SellerRegisterViewModel obj)
         {
@@ -58,6 +59,15 @@ namespace ProductApi.Controllers
                 return BadRequest(result);
             }
 
+            //Email Kontrolü
+            var isRegisteredEmail = _sellerRepository.GetByEmail(p=>p.email == obj.email);
+
+            if (isRegisteredEmail != null)
+            {
+                return BadRequest("Bu email zaten var");
+            }
+
+
             //hash user password and return new model 
             var hashedModel = SellerHashHelperCommand.HashPasswordReturnModel(obj);
             
@@ -68,13 +78,51 @@ namespace ProductApi.Controllers
             _sellerRepository.Add(mappedObj);
 
             //Generate Jwt Token
+            var token = JwtHelper.GetJwtToken(mappedObj);
 
-            return Ok(mappedObj);
+            return Ok(token);
+
+        }
+
+        [HttpPost]
+        [Route("sellers/login")]
+        public IActionResult LoginSeller([FromBody] SellerLoginViewModel obj)
+        {
+
+            //Doğrulama işlemleri FluentValidator ile yapılıyor
+            ValidationResult result = _loginValidator.Validate(obj);
+
+
+            if (!result.IsValid)
+            {
+                return BadRequest(result);
+            }
+
+            //Email Kontrolü
+            var isRegisteredEmail = _sellerRepository.GetByEmail(p => p.email == obj.email);
+
+            if (isRegisteredEmail == null)
+            {
+                return BadRequest("Bu emaile sahip kullanıcı bulunamamaktadır");
+            }
+
+            //compare password
+            var passRes = SellerHashHelperCommand.VerifyPassword(obj, isRegisteredEmail);
+
+            if (!passRes)
+            {
+                return BadRequest("Bu şifre yanlış");
+            }
+
+            //Generate Jwt Token
+            var token = JwtHelper.GetJwtToken(isRegisteredEmail);
+
+            return Ok(token);
 
         }
 
         [HttpPut]
-        //[Authorize(Policy = "AdminPolicy")]
+        [Authorize(Policy = "SellerOnly")]
         [Route("sellers/editSeller")]
         public IActionResult UpdateSeller([FromBody] SellerViewModel obj)
         {
@@ -94,7 +142,7 @@ namespace ProductApi.Controllers
         }
 
         [HttpDelete]
-        //[Authorize(Policy = "AdminPolicy")]
+        [Authorize(Policy = "SellerOnly")]
         [Route("sellers/deleteSeller")]
         public IActionResult DeleteSeller(int id)
         {

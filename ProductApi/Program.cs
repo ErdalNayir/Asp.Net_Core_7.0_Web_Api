@@ -1,7 +1,10 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using ProductApi.Commands;
 using ProductApi.Data;
+using ProductApi.Infastructure;
 using ProductApi.Models;
 using ProductApi.Repository.Abstract;
 using ProductApi.Repository.Concrete;
@@ -21,41 +24,47 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(
     builder.Configuration.GetConnectionString("DefaultConnection"), new MySqlServerVersion("8.0.32")));
 
-//Add Authorization
+
+//Add Authorization and Authentication
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminPolicy", policy =>
+    options.AddPolicy("SellerOnly", policy =>
     {
-        policy.RequireRole("Admin"); // Sadece "Admin" rolüne sahip kullanýcýlarý kabul eder
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Seller");
     });
-});
-
-//Add Authentication Schema
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
+}).AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+        .AddJwtBearer(options =>
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            RoleClaimType = "Admin",
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = "valid_issuer",
-            ValidAudience = "valid_audience",
-            IssuerSigningKey = new SymmetricSecurityKey(SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(builder.Configuration.GetConnectionString("SecretKey"))))
-        };
-    });
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = "ProductApi",
+                ValidAudience = "ProductApi",
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetConnectionString("SecretKey")))
+            };
+        });
+
+
 
 //Add Fluent Validation
 builder.Services.AddSingleton<IValidator<Product>, ProductValidator>();
 builder.Services.AddSingleton<IValidator<Category>, CategoryValidator>();
 builder.Services.AddSingleton<IValidator<Seller>, SellerValidator>();
 builder.Services.AddSingleton<IValidator<SellerRegisterViewModel>, SellerRegisterValidator>();
+builder.Services.AddSingleton<IValidator<SellerLoginViewModel>, SellerLoginValidator>();
 
 //Adding Repositories
 builder.Services.AddScoped<IRepository<Product>, ProductRepository>();
 builder.Services.AddScoped<IRepository<Seller>, SellerRepository>();
 builder.Services.AddScoped<IRepository<Category>, CategoryRepository>();
+
 
 
 //AutoMapper

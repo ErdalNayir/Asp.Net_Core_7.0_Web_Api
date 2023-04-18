@@ -44,7 +44,7 @@ namespace ProductApi.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Policy = "AdminPolicy")]
+        [Authorize(Policy = "SellerOnly")]
         [Route("products/addProduct")]
         public IActionResult AddProduct([FromBody] ProductViewModel obj)
         {
@@ -66,7 +66,7 @@ namespace ProductApi.Controllers
         }
 
         [HttpPut]
-        //[Authorize(Policy = "AdminPolicy")]
+        [Authorize(Policy = "SellerOnly")]
         [Route("products/editProduct")]
         public IActionResult UpdateProduct([FromBody] ProductViewModel obj)
         {
@@ -85,7 +85,7 @@ namespace ProductApi.Controllers
         }
 
         [HttpDelete]
-        //[Authorize(Policy = "AdminPolicy")]
+        [Authorize(Policy = "SellerOnly")]
         [Route("products/deleteProduct")]
         public IActionResult DeleteProduct(int id)
         {

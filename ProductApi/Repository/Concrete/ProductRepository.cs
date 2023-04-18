@@ -39,6 +39,11 @@ namespace ProductApi.Repository.Concrete
             return _context.Products.ToList();
         }
 
+        public Product GetByEmail(Expression<Func<Product, bool>> predicate)
+        {
+            throw new NotImplementedException();
+        }
+
         public Product GetById(Expression<Func<Product, bool>> predicate) => _context.Products.SingleOrDefault(predicate);
 
         public void Update(Product model)

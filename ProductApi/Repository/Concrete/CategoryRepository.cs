@@ -33,6 +33,11 @@ namespace ProductApi.Repository.Concrete
             return _context.Categories.ToList();
         }
 
+        public Category GetByEmail(Expression<Func<Category, bool>> predicate)
+        {
+            throw new NotImplementedException();
+        }
+
         public Category GetById(Expression<Func<Category, bool>> predicate)
         {
            return _context.Categories.SingleOrDefault(predicate);

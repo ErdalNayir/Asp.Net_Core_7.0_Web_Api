@@ -1,7 +1,6 @@
 ﻿using ProductApi.Data;
 using ProductApi.Models;
 using ProductApi.Repository.Abstract;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace ProductApi.Repository.Concrete
@@ -36,6 +35,12 @@ namespace ProductApi.Repository.Concrete
         {
             return _context.Sellers.SingleOrDefault(predicate);
         }
+
+        public Seller GetByEmail(Expression<Func<Seller, bool>> predicate)
+        {
+            return _context.Sellers.SingleOrDefault(predicate);
+        }
+
 
         public void Update(Seller model)
         {
